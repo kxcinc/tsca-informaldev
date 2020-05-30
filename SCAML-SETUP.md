@@ -3,6 +3,7 @@
 first of all, have `opam` installed and initialized
 
 (at the project root directory)
+$ opam update
 $ opam switch create . ocaml-base-compiler.4.09.1
 $ git submodule init
 $ git submodule update
