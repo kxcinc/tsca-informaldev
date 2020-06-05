@@ -1,0 +1,23 @@
+(executable
+ (name broker)
+ (modules broker)
+ (libraries scaml.scamlib typerep ptime)
+ (preprocess (pps scaml.inlined ppx_typerep_conv))
+ (preprocessor_deps (file wrapper.tz)))
+
+(executable
+ (name wrapper)
+ (modules wrapper)
+ (libraries scaml.scamlib typerep ptime)
+ (preprocess (pps scaml.inlined ppx_typerep_conv)))
+
+(rule
+ (target wrapper.tz)
+ (deps wrapper.exe)
+ (mode (promote (until-clean)))
+ (action (with-stdout-to %{target}
+  (run %{deps}))))
+
+(env
+ (dev
+  (flags (:standard -warn-error -A -g))))
