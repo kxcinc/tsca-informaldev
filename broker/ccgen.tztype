@@ -1,0 +1,5 @@
+(pair :ccgen
+   (lambda %genprog
+      bytes
+      (list (pair string (pair (lambda (pair bytes bytes) (pair (list operation) bytes)) bytes))))
+   (lambda %initprog bytes (lambda (map string address) (map string bytes))))

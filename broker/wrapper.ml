@@ -8,6 +8,7 @@ module%scamlcontract WrapperContract = struct
     }
   and wfunc = bytes*bytes -> operation list*bytes
   and avatar_identity = {
+      broker   : address;
       sprthash : string;
       rclabel  : string;
     }
