@@ -89,16 +89,17 @@ module%scamltypes BrokerContractTypes = struct
     | SudoAddAdmin of address
     | SudoRemoveAdmin of address
     | SudoAddTemplate of template_descriptor
+end
 
-  let empty_storage = {
+let init_storage admins =
+  BrokerContractTypes.{
       broker_fee = FreeOfCharge;
-      broker_admins = Set [];
+      broker_admins = admins;
       broker_availability = false;
 
       templates = BigMap [];
       instances = BigMap [];
-    }
-end
+  }
 
 module%scamlcontract BrokerContract = struct
   open SCaml
@@ -183,7 +184,7 @@ module Args = struct
   let printing : [ `Nothing
                  | `WrapperContractCode
                  | `BrokerContractCode
-                 | `EmptyStorage
+                 | `InitStorage of SCaml.address SCaml.set
                  ] ref = ref `Nothing
 
   let toprint x () = printing := x
@@ -193,8 +194,13 @@ module Args = struct
        "to print the wrapper contract code");
       ("-broker-code", Arg.Unit (toprint `BrokerContractCode),
        "to print the wrapper contract code");
-      ("-empty-storage", Arg.Unit (toprint `EmptyStorage),
-       "to print the empty storage for the broker contract");
+      ("-init-storage", Arg.String (fun str ->
+                            let open SCaml in 
+                            let addrs = Str.split_delim (Str.regexp ",") str in
+                            let addrs = addrs |> List.map (fun x -> Address x) in
+                            let addrs = Set addrs in
+                            printing := `InitStorage addrs),
+       "<admins> to print the an initial storage for the broker contract");
     ]
 
   let usage() = Arg.usage speclist "broker.ml: Broker smart-contract coordinator\n\
@@ -208,6 +214,8 @@ let () =
      wrapper_contract |> print_endline
   | `BrokerContractCode -> 
      [%scamlcontract BrokerContract] |> print_endline
-  | `EmptyStorage ->
-     [%scamlvalue BrokerContractTypes.empty_storage] |> print_endline
+  | `InitStorage admins ->
+     [%scamltype: BrokerContractTypes.storage]#convert
+       (init_storage admins)
+     |> print_endline
   | `Nothing -> Args.usage()
