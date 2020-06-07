@@ -7,3 +7,6 @@
 [submodule "vendors/scaml"]
 	path = vendors/scaml
 	url = https://gitlab.com/haochenxie/scaml.git
+[submodule "vendors/kxclib"]
+	path = vendors/kxclib
+	url = https://github.com/kxcteam/kxclib-ocaml.git
