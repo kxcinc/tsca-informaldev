@@ -3,7 +3,7 @@ let wrapper_contract =
   let str = really_input_string ch (in_channel_length ch) in
   close_in ch; str
 
-module%scamlcontract BrokerContract = struct
+module%scamltypes BrokerContractTypes = struct
   open SCaml
 
   type param = unit
@@ -29,8 +29,19 @@ module%scamlcontract BrokerContract = struct
       template_fee : fee_descriptor;
       template_availability : bool;
 
+      ccgen: bytes;
+      (** should unpack to [ccgen] *)
+
       bookhash : book_hash option;
       tmplhash : template_hash;
+    }
+
+  and  rclabel = string
+
+  and  wfunc = bytes*bytes -> operation list*bytes
+  [@@scaml.noconv]
+
+  and  ccgen = {
       genprog  : (bytes ->
                   (** genesis-params *)
                   (rclabel*wfunc*bytes) list
@@ -44,14 +55,15 @@ module%scamlcontract BrokerContract = struct
                   (** optional initialization message per contract *)
                  );
     }
-  and  rclabel = string
-  and  wfunc = bytes*bytes -> operation list*bytes
+  [@@scaml.noconv]
 
   type wrapper_storage = {
       wfunc    : wfunc;
       wstorage : bytes;
       avatarid : avatar_identity option;
     }
+  [@@scaml.noconv]
+
   and avatar_identity = {
       sprthash : string;
       rclabel  : string;
@@ -77,6 +89,11 @@ module%scamlcontract BrokerContract = struct
     | SudoAddAdmin of address
     | SudoRemoveAdmin of address
     | SudoAddTemplate of template_descriptor
+end
+
+module%scamlcontract BrokerContract = struct
+  open SCaml
+  open BrokerContractTypes
 
   let flatten_ops (opss : operations list) =
     List.fold_left' (fun (acc, ops) -> List.rev_append (List.rev ops) acc) [] opss
@@ -91,8 +108,12 @@ module%scamlcontract BrokerContract = struct
   let process_origination
         template
         { sprthash; genparam; initbalance; _ } =
-    let { genprog; initprog; tmplhash; _ } = match template with
-        Some x -> x | None -> failwith "" in
+    let { ccgen; tmplhash; _ } = match template with
+        Some x -> x | None -> failwith "112" in
+    let { genprog; initprog } = match (Obj.unpack ccgen : ccgen option) with
+      | None -> failwith "114"
+      | Some x -> x
+    in
     let rclist = genprog genparam in
     let rcolist =
       let f (rclabel, body, storage0) =

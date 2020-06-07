@@ -2,14 +2,14 @@
  (name broker)
  (modules broker)
  (libraries scaml.scamlib typerep ptime)
- (preprocess (pps scaml.inlined ppx_typerep_conv))
+ (preprocess (pps scaml.inlined))
  (preprocessor_deps (file wrapper.tz)))
 
 (executable
  (name wrapper)
  (modules wrapper)
  (libraries scaml.scamlib typerep ptime)
- (preprocess (pps scaml.inlined ppx_typerep_conv)))
+ (preprocess (pps scaml.inlined)))
 
 (rule
  (target wrapper.tz)
@@ -17,6 +17,12 @@
  (mode (promote (until-clean)))
  (action (with-stdout-to %{target}
   (run %{deps}))))
+
+(rule
+ (target broker.tz)
+ (deps broker.exe)
+ (action (with-stdout-to %{target}
+  (run %{deps} -broker-code))))
 
 (env
  (dev
