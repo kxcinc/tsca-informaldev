@@ -89,6 +89,15 @@ module%scamltypes BrokerContractTypes = struct
     | SudoAddAdmin of address
     | SudoRemoveAdmin of address
     | SudoAddTemplate of template_descriptor
+
+  let empty_storage = {
+      broker_fee = FreeOfCharge;
+      broker_admins = Set [];
+      broker_availability = false;
+
+      templates = BigMap [];
+      instances = BigMap [];
+    }
 end
 
 module%scamlcontract BrokerContract = struct
@@ -174,6 +183,7 @@ module Args = struct
   let printing : [ `Nothing
                  | `WrapperContractCode
                  | `BrokerContractCode
+                 | `EmptyStorage
                  ] ref = ref `Nothing
 
   let toprint x () = printing := x
@@ -183,6 +193,8 @@ module Args = struct
        "to print the wrapper contract code");
       ("-broker-code", Arg.Unit (toprint `BrokerContractCode),
        "to print the wrapper contract code");
+      ("-empty-storage", Arg.Unit (toprint `EmptyStorage),
+       "to print the empty storage for the broker contract");
     ]
 
   let usage() = Arg.usage speclist "broker.ml: Broker smart-contract coordinator\n\
@@ -196,4 +208,6 @@ let () =
      wrapper_contract |> print_endline
   | `BrokerContractCode -> 
      [%scamlcontract BrokerContract] |> print_endline
+  | `EmptyStorage ->
+     [%scamlvalue BrokerContractTypes.empty_storage] |> print_endline
   | `Nothing -> Args.usage()
