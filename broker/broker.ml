@@ -1,7 +1,9 @@
-let wrapper_contract =
-  let ch = open_in "wrapper.tz" in
+let slurp filename =
+  let ch = open_in filename in
   let str = really_input_string ch (in_channel_length ch) in
   close_in ch; str
+
+let wrapper_contract = slurp "wrapper.tz"
 
 module%scamltypes BrokerContractTypes = struct
   open SCaml
@@ -422,6 +424,7 @@ module Args = struct
                  | `MakeTemplateCharge of string
                  | `MakeTemplateFree of string
                  | `UploadTemplate of string
+                 | `UploadTemplateFunny of string
                  | `SwitchTemplate of (string*bool)
                  | `Withdraw of string
                  ] ref = ref `Nothing
@@ -473,6 +476,9 @@ module Args = struct
       ("-upload-template", Arg.String (fun str ->
                              printing := `UploadTemplate str),
        "<tmplid,ccgen> upload a new template; [ccgen] should be packed in bytes");
+      ("-upload-template-funny", Arg.String (fun str ->
+                                     printing := `UploadTemplateFunny str),
+       "<tmplid> upload a the 'funny' template");
       ("-enable-template", Arg.String (fun str ->
                              printing := `SwitchTemplate (str, true)),
        "<tmplid> switch the template on");
@@ -565,6 +571,15 @@ let () =
   | `UploadTemplate str ->
      Scanf.sscanf str "%i,%s" &
        fun tmplid ccgen ->
+       let open BrokerContractTypes in
+       [%scamltype: BrokerContractTypes.message]#convert
+         (SudoUploadTemplate { tmplid = Nat tmplid;
+                               ccgen = Bytes ccgen;})
+       |> print_endline
+  | `UploadTemplateFunny str ->
+     Scanf.sscanf str "%i" &
+       fun tmplid ->
+       let ccgen = slurp "funny.data" |> String.trim in
        let open BrokerContractTypes in
        [%scamltype: BrokerContractTypes.message]#convert
          (SudoUploadTemplate { tmplid = Nat tmplid;

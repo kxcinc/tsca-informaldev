@@ -55,5 +55,34 @@ module%scamldefs HeavyLifting = struct
     }
 end
 
+module Args = struct
+  let printing : [ `FunnyPacked
+                 | `FunnyCode
+                 | `CcgenType
+                 ] ref = ref `FunnyCode
+
+  let toprint x () = printing := x
+
+  let speclist = [
+      ("-code", Arg.Unit (toprint `FunnyCode),
+       "print ccgen code in Michelson");
+      ("-packed", Arg.Unit (toprint `FunnyPacked),
+       "print packed version ccgen in hex");
+      ("-ccgen-type", Arg.Unit (toprint `CcgenType),
+       "print ccgen type");
+    ]
+
+  let usage() = Arg.usage speclist __FILE__
+  let () = Arg.parse speclist print_endline __FILE__
+end
+
 let () =
-  [%scamlvalue HeavyLifting.genfunny] |> print_endline
+  match !Args.printing with
+  | `FunnyCode ->
+     [%scamlvalue HeavyLifting.genfunny] |> print_endline
+  | `FunnyPacked ->
+     let hex = Hex.of_string [%scamlvalue.packed HeavyLifting.genfunny] in
+     Format.printf "%a\n" Hex.pp hex
+  | `CcgenType ->
+     [%scamltype.tz: HeavyLifting.ccgen] |> print_endline
+

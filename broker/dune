@@ -3,7 +3,7 @@
  (modules broker)
  (libraries scaml.scamlib typerep ptime kxclib)
  (preprocess (pps scaml.inlined ppx_deriving.show))
- (preprocessor_deps (file wrapper.tz) (file funny.tz)))
+ (preprocessor_deps (file wrapper.tz) (file funny.data)))
 
 (executable
  (name wrapper)
@@ -35,7 +35,21 @@
  (mode (promote (until-clean)))
  (deps funny.exe)
  (action (with-stdout-to %{target}
-          (run %{deps}))))
+          (run %{deps} -code))))
+
+(rule
+ (target funny.data)
+ (mode (promote (until-clean)))
+ (deps funny.exe)
+ (action (with-stdout-to %{target}
+          (run %{deps} -packed))))
+
+(rule
+ (target funny.type)
+ (mode (promote (until-clean)))
+ (deps funny.exe)
+ (action (with-stdout-to %{target}
+          (run %{deps} -ccgen-type))))
 
 (env
  (dev
