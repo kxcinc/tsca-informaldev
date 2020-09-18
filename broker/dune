@@ -17,6 +17,12 @@
  (libraries scaml.scamlib)
  (preprocess (pps scaml.inlined ppx_deriving.show)))
 
+(executable
+ (name frozen)
+ (modules frozen)
+ (libraries scaml.scamlib)
+ (preprocess (pps scaml.inlined ppx_deriving.show)))
+
 (rule
  (target wrapper.tz)
  (deps wrapper.exe)
@@ -41,6 +47,20 @@
  (target funny.data)
  (mode (promote (until-clean)))
  (deps funny.exe)
+ (action (with-stdout-to %{target}
+          (run %{deps} -packed))))
+
+(rule
+ (target frozen.tz)
+ (mode (promote (until-clean)))
+ (deps frozen.exe)
+ (action (with-stdout-to %{target}
+          (run %{deps} -code))))
+
+(rule
+ (target frozen.data)
+ (mode (promote (until-clean)))
+ (deps frozen.exe)
  (action (with-stdout-to %{target}
           (run %{deps} -packed))))
 

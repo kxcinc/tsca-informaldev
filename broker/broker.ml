@@ -246,6 +246,8 @@ module%scamlcontract BrokerContract = struct
   let flatten_ops (opss : operations list) =
     List.fold_left' (fun (acc, ops) -> List.rev_append (List.rev ops) acc) [] opss
 
+  (* XXX initbalance should be distributed to the ensemble as decided by the genprog *)
+
   let wrap body storage0 avatarid initbalance =
     Contract.create_from_tz_file
       "wrapper.tz"

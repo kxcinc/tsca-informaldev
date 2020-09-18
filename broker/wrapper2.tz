@@ -1,0 +1,22 @@
+parameter bytes;
+storage
+/*
+  (pair :storage
+     (bytes %wstorage)
+     (pair (lambda %wfunc (pair bytes bytes) (pair (list operation) bytes))
+           (option %avatarid
+              (pair :avatar_identity (address %broker) (pair (string %sprthash) (string %rclabel))))));
+*/
+  (pair
+     (bytes)
+     (pair (lambda (pair bytes bytes) (pair (list operation) bytes))
+           bytes));
+/*
+code { DUP; CDDAR %wfunc; DUP 2; CDAR %wstorage; DUP 3; CAR %parameter; PAIR; EXEC;
+       DUP; CAR @operations; DIP { CDR @wstorage_new; DIP { CDDR }; PAIR @newstorage_new };
+       PAIR @output; }
+*/
+code { DUP; CDDAR; DUP 2; CDAR; DUP 3; CAR; PAIR; EXEC;
+       DUP; CAR; DIP { CDR; DIP { CDDR }; PAIR };
+       PAIR; }
+

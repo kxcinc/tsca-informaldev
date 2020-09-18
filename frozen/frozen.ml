@@ -32,11 +32,11 @@ module%scamlcontract FrozenMain = struct
         { amount; _ }
         { fund_owners; unfrozen } =
     if Global.get_amount() > (Tz 0.)
-    then failwith "frozen contract cannot accept positive amount transfer";
+    then failwith "frozen contract cannot accept tokens";
     if not (Set.mem (Global.get_source()) fund_owners)
     then failwith "source of operation is not whitelisted for withdrawal operations";
     if Global.get_now() < unfrozen
-    then failwith "deposit still frozen";
+    then failwith "deposit is still frozen";
     if Global.get_balance() < amount
     then failwith "requested withdrawal amount exceeds the balance";
     ()

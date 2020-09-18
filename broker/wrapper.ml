@@ -1,16 +1,20 @@
 module%scamlcontract WrapperContract = struct
   open SCaml
 
+  type wparam = bytes
+  type wstorage = bytes
+
   type storage = {
+      wstorage : wstorage;
       wfunc    : wfunc;
-      wstorage : bytes;
       avatarid : avatar_identity option;
     }
-  and wfunc = bytes*bytes -> operation list*bytes
+  and wfunc = wparam*wstorage -> operation list*wstorage
   and avatar_identity = {
       broker   : address;
       sprthash : string;
       rclabel  : string;
+      tmplversion : string;
     }
 
   let main arg ({wfunc;wstorage;_} as st) =
