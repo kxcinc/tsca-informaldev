@@ -39,7 +39,9 @@ module%scamlcontract FrozenMain = struct
     then failwith "deposit is still frozen";
     if Global.get_balance() < amount
     then failwith "requested withdrawal amount exceeds the balance";
-    ()
+    if amount = (Tz 0.)
+    then failwith "amount to withdraw must be positive"
+    else ()
 
   let main : entrypoint
     = fun param storage ->
