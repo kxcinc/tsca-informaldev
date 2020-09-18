@@ -25,13 +25,15 @@ module%scamltypes CrowdfundingTypes = struct
       funding_end   : timestamp;
       unconditional_refund_start : timestamp;
 
-      funding_target : tz option;
+      funding_target : tz option; (* XXX: tz option to option *)
       maximal_raise  : tz option;
-      minimal_contribution : tz option;
+      minimal_contribution : tz option; (* XXX: tz option to option *)
 
       total_raised : tz;
       contribution_registry   : (nat, contribution_entry) big_map;
       next_contribution_index : nat;
+
+      withdrawn    : bool;
     }
 end
 
@@ -44,7 +46,9 @@ module%scamlcontract CrowdfundingMain = struct
   let calc_stage storage =
     let { funding_start; funding_end;
           total_raised; funding_target;
-          unconditional_refund_start; _ } = storage in
+          unconditional_refund_start;
+          withdrawn;
+          _ } = storage in
     let now = Global.get_now() in
     if now < funding_start then Prefunding
     else if now < funding_end then Funding
@@ -55,7 +59,6 @@ module%scamlcontract CrowdfundingMain = struct
         if not funding_successful then Unfunded
         else begin
             (* a successful funding *)
-            let withdrawn = Global.get_balance() = (Tz 0.) in
             if withdrawn then Withdrawn
             else if now < unconditional_refund_start then Funded
             else Refunding
@@ -93,6 +96,7 @@ module%scamlcontract CrowdfundingMain = struct
            let registry' = BigMap.update idx (Some entry) registry in
            let storage' = {
                storage with
+               total_raised = total_raised +$ contribution;
                contribution_registry = registry';
                next_contribution_index = idx +^ (Nat 1);
              } in
@@ -139,14 +143,12 @@ module%scamlcontract CrowdfundingMain = struct
        let { raisers; total_raised;
              _ } = storage in
        let requester = Global.get_source() in
-       if requester <> beneficiary then
-         failwith "one can only request a withdrawal on its own behalf"
-       else if not (Set.mem beneficiary raisers) then
+       if not (Set.mem requester raisers) then
          failwith "only raisers are permitted to perform a withdrawal"
        else begin
            let op = perform_transfer beneficiary total_raised
                       "incorrect or not-supported refund_address raiser address" in
-           [op], storage
+           [op], { storage with withdrawn = true }
          end
     | _ -> failwith "panic"
 
@@ -155,7 +157,7 @@ module%scamlcontract CrowdfundingMain = struct
     = fun action storage ->
     let stage = calc_stage storage in
     let ops, storage = match stage, action with
-    | Prefunding, _ -> failwith "funding period hasn't started yet: no operation allowed"
+    | Prefunding, _ -> failwith "funding period has not started yet: no operation allowed"
     | Funding, RaiserWithdraw _ -> failwith "still in funding period: no raiser withdrawal allowed"
     | Funding, Contribute _ -> handle_contribution (action, storage)
     | Funding, RefundRequest _ -> handle_refund_request stage (action, storage)
