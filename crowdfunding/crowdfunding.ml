@@ -62,13 +62,25 @@ module%scamlcontract CrowdfundingMain = struct
       failwith "redeem period too long"
     )
 
+  let key_hash_to_address kh =
+    Contract.address (Contract.implicit_account kh)
+
+  let genparam_to_init_storage : genparam -> storage =
+    fun { raisers; funding_start; funding_end; unconditional_refund_start } ->
+    let raisers = Set.fold' (fun (kh, acc) ->
+                      let address = key_hash_to_address kh in
+                      Set.update address true acc) raisers Set.empty in
+    { raisers;
+      refund_table = BigMap.empty;
+      withdrawn    = false;
+
+      funding_start; funding_end;
+      unconditional_refund_start; }
+
   let create_transfer amount beneficiary =
     match (Contract.contract beneficiary : unit contract option) with
     | None -> failwith "incorrect or not-supported beneficiary address"
     | Some c -> Operation.transfer_tokens () amount c
-
-  let key_hash_to_address kh =
-    Contract.address (Contract.implicit_account kh)
 
   let main : (action, storage) SCaml.entry =
     fun action storage ->
