@@ -1,5 +1,6 @@
 (executable
  (name crowdfunding)
+ (promote (until-clean))
  (libraries scaml.scamlib typerep ptime)
  (preprocess (pps ppx_inline_test scaml.inlined ppx_typerep_conv)))
 

@@ -1,0 +1,633 @@
+parameter
+  (or :CrowdfundingTypes.action
+     (key_hash :CrowdfundingTypes.action.Contribute %Contribute)
+     (or (address :CrowdfundingTypes.action.Withdraw %Withdraw)
+         (address :CrowdfundingTypes.action.Refund %Refund))) ;
+storage
+  (pair :CrowdfundingTypes.storage
+     (pair (set %raisers address) (big_map %refund_table address mutez))
+     (pair (pair (bool %withdrawn) (timestamp %funding_start))
+           (pair (timestamp %funding_end) (timestamp %unconditional_refund_start)))) ;
+code { DUP
+       /* global_param_352, fst, var param_storage_353 */ ;
+       CAR ;
+       DIG 1
+       /* storage_351, snd, var param_storage_353 */ ;
+       DUP ;
+       DUG 2 ;
+       CDR ;
+       PUSH unit Unit
+       /* k_482 */ ;
+       DUP
+       /* __x_472, Global.get_now, var k_482 */ ;
+       DROP ;
+       NOW ;
+       PUSH unit Unit
+       /* k_483 */ ;
+       DUP
+       /* __x_468, Global.get_amount, var k_483 */ ;
+       DROP ;
+       AMOUNT ;
+       PUSH unit Unit
+       /* k_484 */ ;
+       DUP
+       /* __x_464, Global.get_source, var k_484 */ ;
+       DROP ;
+       SOURCE ;
+       DIG 7
+       /* j_612, var global_param_352 */ ;
+       DUP ;
+       DUG 8 ;
+       IF_LEFT
+         { DUP
+           /* k_675, Contract.implicit_account, var __l_460 */ ;
+           IMPLICIT_ACCOUNT ;
+           DUP
+           /* j_674, Contract.address, var k_675 */ ;
+           ADDRESS ;
+           DIG 9
+           /* k_573, snd, var storage_351 */ ;
+           DUP ;
+           DUG 10 ;
+           CDR ;
+           DUP
+           /* k_574, fst, var k_573 */ ;
+           CAR ;
+           DUP
+           /* k_575, snd, var k_574 */ ;
+           CDR ;
+           DIG 10
+           /* k_576, <=, var __x_472 */ ;
+           DUP ;
+           DUG 11 ;
+           DIG 1
+           /* var k_575 */ ;
+           DUP ;
+           DUG 2 ;
+           COMPARE ;
+           LE ;
+           DIG 13
+           /* k_577, snd, var storage_351 */ ;
+           DUP ;
+           DUG 14 ;
+           CDR ;
+           DUP
+           /* k_578, snd, var k_577 */ ;
+           CDR ;
+           DUP
+           /* k_579, fst, var k_578 */ ;
+           CAR ;
+           DUP
+           /* k_580, <=, var k_579 */ ;
+           DIG 15
+           /* var __x_472 */ ;
+           DUP ;
+           DUG 16 ;
+           COMPARE ;
+           LE ;
+           DUP
+           /* k_581, &&, var k_580 */ ;
+           DIG 5
+           /* var k_576 */ ;
+           DUP ;
+           DUG 6 ;
+           AND ;
+           DUP
+           /* j_677, var k_581 */ ;
+           IF { DIG 18
+                /* k_583, fst, var storage_351 */ ;
+                DUP ;
+                DUG 19 ;
+                CAR ;
+                DUP
+                /* k_584, snd, var k_583 */ ;
+                CDR ;
+                DUP
+                /* __v_433, BigMap.get, var k_584 */ ;
+                DIG 12
+                /* var j_674 */ ;
+                DUP ;
+                DUG 13 ;
+                GET ;
+                DUP
+                /* __x_435, var __v_433 */ ;
+                IF_NONE
+                  { DIG 17 /* var __x_468 */ ; DUP ; DUG 18 }
+                  { DIG 18
+                    /* j_678, +$, var __x_468 */ ;
+                    DUP ;
+                    DUG 19 ;
+                    DIG 1
+                    /* var __x_434 */ ;
+                    DUP ;
+                    DUG 2 ;
+                    ADD ;
+                    DUP
+                    /* var j_678 */ ;
+                    DIP { DROP 2 }
+                    /* clean j_678 */ } ;
+                DUP
+                /* k_588, var __x_435 */ ;
+                SOME ;
+                DIG 23
+                /* k_589, fst, var storage_351 */ ;
+                DUP ;
+                DUG 24 ;
+                CAR ;
+                DUP
+                /* k_590, snd, var k_589 */ ;
+                CDR ;
+                DUP
+                /* __x_425, BigMap.update, var k_590 */ ;
+                DIG 3
+                /* var k_588 */ ;
+                DUP ;
+                DUG 4 ;
+                DIG 18
+                /* var j_674 */ ;
+                DUP ;
+                DUG 19 ;
+                UPDATE ;
+                NIL operation
+                /* k_591 */ ;
+                DIG 27
+                /* k_592, fst, var storage_351 */ ;
+                DUP ;
+                DUG 28 ;
+                CAR ;
+                DUP
+                /* k_593, fst, var k_592 */ ;
+                CAR ;
+                DIG 3
+                /* k_594, var __x_425 */ ;
+                DUP ;
+                DUG 4 ;
+                DIG 1
+                /* var k_593 */ ;
+                DUP ;
+                DUG 2 ;
+                PAIR ;
+                DIG 30
+                /* k_595, snd, var storage_351 */ ;
+                DUP ;
+                DUG 31 ;
+                CDR ;
+                DUP
+                /* k_596, var k_595 */ ;
+                DIG 2
+                /* var k_594 */ ;
+                DUP ;
+                DUG 3 ;
+                PAIR ;
+                DUP
+                /* j_681, var k_596 */ ;
+                DIG 6
+                /* var k_591 */ ;
+                DUP ;
+                DUG 7 ;
+                PAIR ;
+                DUP
+                /* var j_681 */ ;
+                DIP { DROP 15 }
+                /* clean j_681, clean k_596, clean k_595, clean k_594, clean k_593, clean k_592, clean k_591, clean __x_425, clean k_590, clean k_589, clean k_588, clean __x_435, clean __v_433, clean k_584, clean k_583 */ }
+              { PUSH string "not in funding period"
+                /* k_582 */ ;
+                DUP
+                /* failwith, var k_582 */ ;
+                FAILWITH } ;
+           DUP
+           /* var j_677 */ ;
+           DIP { DROP 13 }
+           /* clean j_677, clean k_581, clean k_580, clean k_579, clean k_578, clean k_577, clean k_576, clean k_575, clean k_574, clean k_573, clean j_674, clean k_675 */ }
+         { DUP
+           /* var __r_461 */ ;
+           IF_LEFT
+             { DIG 8
+               /* k_521, snd, var storage_351 */ ;
+               DUP ;
+               DUG 9 ;
+               CDR ;
+               DUP
+               /* k_522, fst, var k_521 */ ;
+               CAR ;
+               DUP
+               /* k_523, snd, var k_522 */ ;
+               CDR ;
+               DIG 9
+               /* k_524, >, var __x_472 */ ;
+               DUP ;
+               DUG 10 ;
+               DIG 1
+               /* var k_523 */ ;
+               DUP ;
+               DUG 2 ;
+               COMPARE ;
+               GT ;
+               DIG 12
+               /* k_525, snd, var storage_351 */ ;
+               DUP ;
+               DUG 13 ;
+               CDR ;
+               DUP
+               /* k_526, snd, var k_525 */ ;
+               CDR ;
+               DUP
+               /* k_527, fst, var k_526 */ ;
+               CAR ;
+               DIG 13
+               /* k_528, <, var __x_472 */ ;
+               DUP ;
+               DUG 14 ;
+               DIG 1
+               /* var k_527 */ ;
+               DUP ;
+               DUG 2 ;
+               COMPARE ;
+               LT ;
+               DIG 16
+               /* k_529, snd, var storage_351 */ ;
+               DUP ;
+               DUG 17 ;
+               CDR ;
+               DUP
+               /* k_530, snd, var k_529 */ ;
+               CDR ;
+               DUP
+               /* k_531, snd, var k_530 */ ;
+               CDR ;
+               DIG 17
+               /* k_532, <=, var __x_472 */ ;
+               DUP ;
+               DUG 18 ;
+               DIG 1
+               /* var k_531 */ ;
+               DUP ;
+               DUG 2 ;
+               COMPARE ;
+               LE ;
+               DUP
+               /* k_533, ||, var k_532 */ ;
+               DIG 5
+               /* var k_528 */ ;
+               DUP ;
+               DUG 6 ;
+               OR ;
+               DUP
+               /* k_534, ||, var k_533 */ ;
+               DIG 10
+               /* var k_524 */ ;
+               DUP ;
+               DUG 11 ;
+               OR ;
+               DUP
+               /* j_644, var k_534 */ ;
+               IF { PUSH string "invalid time to make withdrawal request"
+                    /* k_568 */ ;
+                    DUP
+                    /* failwith, var k_568 */ ;
+                    FAILWITH }
+                  { DIG 22
+                    /* k_535, snd, var storage_351 */ ;
+                    DUP ;
+                    DUG 23 ;
+                    CDR ;
+                    DUP
+                    /* k_536, fst, var k_535 */ ;
+                    CAR ;
+                    DUP
+                    /* k_537, fst, var k_536 */ ;
+                    CAR ;
+                    DUP
+                    /* var k_537 */ ;
+                    IF { PUSH string "raised fund already withdrawn"
+                         /* k_567 */ ;
+                         DUP
+                         /* failwith, var k_567 */ ;
+                         FAILWITH }
+                       { DIG 25
+                         /* k_538, fst, var storage_351 */ ;
+                         DUP ;
+                         DUG 26 ;
+                         CAR ;
+                         DUP
+                         /* k_539, fst, var k_538 */ ;
+                         CAR ;
+                         DUP
+                         /* k_540, Set.mem, var k_539 */ ;
+                         DIG 22
+                         /* var __x_464 */ ;
+                         DUP ;
+                         DUG 23 ;
+                         MEM ;
+                         PUSH bool False
+                         /* k_541 */ ;
+                         DUP
+                         /* k_542, =, var k_541 */ ;
+                         DIG 2
+                         /* var k_540 */ ;
+                         DUP ;
+                         DUG 3 ;
+                         COMPARE ;
+                         EQ ;
+                         DUP
+                         /* var k_542 */ ;
+                         IF { PUSH string "only raisers could request withdrawal"
+                              /* k_566 */ ;
+                              DUP
+                              /* failwith, var k_566 */ ;
+                              FAILWITH }
+                            { PUSH unit Unit
+                              /* k_551 */ ;
+                              DUP
+                              /* k_552, Global.get_balance, var k_551 */ ;
+                              DROP ;
+                              BALANCE ;
+                              DIG 24
+                              /* __v_693, Contract.contract, var __l_462 */ ;
+                              DUP ;
+                              DUG 25 ;
+                              CONTRACT unit ;
+                              DUP
+                              /* j_694, var __v_693 */ ;
+                              IF_NONE
+                                { PUSH string "incorrect or not-supported beneficiary address"
+                                  /* k_698 */ ;
+                                  DUP
+                                  /* k_699, failwith, var k_698 */ ;
+                                  FAILWITH }
+                                { PUSH unit Unit
+                                  /* k_696 */ ;
+                                  DIG 1
+                                  /* j_697, Operation.transfer_tokens, var __x_695 */ ;
+                                  DUP ;
+                                  DUG 2 ;
+                                  DIG 4
+                                  /* var k_552 */ ;
+                                  DUP ;
+                                  DUG 5 ;
+                                  DIG 2
+                                  /* var k_696 */ ;
+                                  DUP ;
+                                  DUG 3 ;
+                                  TRANSFER_TOKENS ;
+                                  DUP
+                                  /* var j_697 */ ;
+                                  DIP { DROP 3 }
+                                  /* clean j_697, clean k_696 */ } ;
+                              NIL operation
+                              /* k_554 */ ;
+                              DUP
+                              /* k_555, var k_554 */ ;
+                              DIG 2
+                              /* var j_694 */ ;
+                              DUP ;
+                              DUG 3 ;
+                              CONS ;
+                              DIG 36
+                              /* k_556, fst, var storage_351 */ ;
+                              DUP ;
+                              DUG 37 ;
+                              CAR ;
+                              PUSH bool True
+                              /* k_557 */ ;
+                              DIG 38
+                              /* k_558, snd, var storage_351 */ ;
+                              DUP ;
+                              DUG 39 ;
+                              CDR ;
+                              DUP
+                              /* k_559, fst, var k_558 */ ;
+                              CAR ;
+                              DUP
+                              /* k_560, snd, var k_559 */ ;
+                              CDR ;
+                              DUP
+                              /* k_561, var k_560 */ ;
+                              DIG 4
+                              /* var k_557 */ ;
+                              DUP ;
+                              DUG 5 ;
+                              PAIR ;
+                              DIG 42
+                              /* k_562, snd, var storage_351 */ ;
+                              DUP ;
+                              DUG 43 ;
+                              CDR ;
+                              DUP
+                              /* k_563, snd, var k_562 */ ;
+                              CDR ;
+                              DUP
+                              /* k_564, var k_563 */ ;
+                              DIG 3
+                              /* var k_561 */ ;
+                              DUP ;
+                              DUG 4 ;
+                              PAIR ;
+                              DUP
+                              /* k_565, var k_564 */ ;
+                              DIG 9
+                              /* var k_556 */ ;
+                              DUP ;
+                              DUG 10 ;
+                              PAIR ;
+                              DUP
+                              /* var k_565 */ ;
+                              DIG 11
+                              /* var k_555 */ ;
+                              DUP ;
+                              DUG 12 ;
+                              PAIR ;
+                              DIP { DROP 16 }
+                              /* clean k_565, clean k_564, clean k_563, clean k_562, clean k_561, clean k_560, clean k_559, clean k_558, clean k_557, clean k_556, clean k_555, clean k_554, clean j_694, clean __v_693, clean k_552, clean k_551 */ } ;
+                         DIP { DROP 5 }
+                         /* clean k_542, clean k_541, clean k_540, clean k_539, clean k_538 */ } ;
+                    DIP { DROP 3 }
+                    /* clean k_537, clean k_536, clean k_535 */ } ;
+               DUP
+               /* var j_644 */ ;
+               DIP { DROP 16 }
+               /* clean j_644, clean k_534, clean k_533, clean k_532, clean k_531, clean k_530, clean k_529, clean k_528, clean k_527, clean k_526, clean k_525, clean k_524, clean k_523, clean k_522, clean k_521 */ }
+             { DIG 8
+               /* k_485, snd, var storage_351 */ ;
+               DUP ;
+               DUG 9 ;
+               CDR ;
+               DUP
+               /* k_486, snd, var k_485 */ ;
+               CDR ;
+               DUP
+               /* k_487, snd, var k_486 */ ;
+               CDR ;
+               DIG 9
+               /* k_488, <, var __x_472 */ ;
+               DUP ;
+               DUG 10 ;
+               DIG 1
+               /* var k_487 */ ;
+               DUP ;
+               DUG 2 ;
+               COMPARE ;
+               LT ;
+               DUP
+               /* j_613, var k_488 */ ;
+               IF { PUSH string "invalid time to make refund request"
+                    /* k_519 */ ;
+                    DUP
+                    /* failwith, var k_519 */ ;
+                    FAILWITH }
+                  { DIG 12
+                    /* k_489, snd, var storage_351 */ ;
+                    DUP ;
+                    DUG 13 ;
+                    CDR ;
+                    DUP
+                    /* k_490, fst, var k_489 */ ;
+                    CAR ;
+                    DUP
+                    /* k_491, fst, var k_490 */ ;
+                    CAR ;
+                    DUP
+                    /* var k_491 */ ;
+                    IF { PUSH string "raised fund already withdrawn"
+                         /* k_518 */ ;
+                         DUP
+                         /* failwith, var k_518 */ ;
+                         FAILWITH }
+                       { DIG 15
+                         /* k_492, fst, var storage_351 */ ;
+                         DUP ;
+                         DUG 16 ;
+                         CAR ;
+                         DUP
+                         /* k_493, snd, var k_492 */ ;
+                         CDR ;
+                         DUP
+                         /* __v_451, BigMap.get, var k_493 */ ;
+                         DIG 10
+                         /* var __r_463 */ ;
+                         DUP ;
+                         DUG 11 ;
+                         GET ;
+                         DUP
+                         /* var __v_451 */ ;
+                         IF_NONE
+                           { PUSH string "not eligible for refund or already refunded"
+                             /* k_642 */ ;
+                             DUP
+                             /* k_643, failwith, var k_642 */ ;
+                             FAILWITH }
+                           { PUSH (option mutez) None
+                             /* k_494 */ ;
+                             DIG 20
+                             /* k_495, fst, var storage_351 */ ;
+                             DUP ;
+                             DUG 21 ;
+                             CAR ;
+                             DUP
+                             /* k_496, snd, var k_495 */ ;
+                             CDR ;
+                             DUP
+                             /* __x_443, BigMap.update, var k_496 */ ;
+                             DIG 3
+                             /* var k_494 */ ;
+                             DUP ;
+                             DUG 4 ;
+                             DIG 16
+                             /* var __r_463 */ ;
+                             DUP ;
+                             DUG 17 ;
+                             UPDATE ;
+                             DIG 15
+                             /* __v_684, Contract.contract, var __r_463 */ ;
+                             DUP ;
+                             DUG 16 ;
+                             CONTRACT unit ;
+                             DUP
+                             /* j_685, var __v_684 */ ;
+                             IF_NONE
+                               { PUSH string "incorrect or not-supported beneficiary address"
+                                 /* k_689 */ ;
+                                 DUP
+                                 /* k_690, failwith, var k_689 */ ;
+                                 FAILWITH }
+                               { PUSH unit Unit
+                                 /* k_687 */ ;
+                                 DIG 1
+                                 /* j_688, Operation.transfer_tokens, var __x_686 */ ;
+                                 DUP ;
+                                 DUG 2 ;
+                                 DIG 8
+                                 /* var __x_452 */ ;
+                                 DUP ;
+                                 DUG 9 ;
+                                 DIG 2
+                                 /* var k_687 */ ;
+                                 DUP ;
+                                 DUG 3 ;
+                                 TRANSFER_TOKENS ;
+                                 DUP
+                                 /* var j_688 */ ;
+                                 DIP { DROP 3 }
+                                 /* clean j_688, clean k_687 */ } ;
+                             NIL operation
+                             /* k_506 */ ;
+                             DUP
+                             /* k_507, var k_506 */ ;
+                             DIG 2
+                             /* var j_685 */ ;
+                             DUP ;
+                             DUG 3 ;
+                             CONS ;
+                             DIG 27
+                             /* k_508, fst, var storage_351 */ ;
+                             DUP ;
+                             DUG 28 ;
+                             CAR ;
+                             DUP
+                             /* k_509, fst, var k_508 */ ;
+                             CAR ;
+                             DIG 6
+                             /* k_510, var __x_443 */ ;
+                             DUP ;
+                             DUG 7 ;
+                             DIG 1
+                             /* var k_509 */ ;
+                             DUP ;
+                             DUG 2 ;
+                             PAIR ;
+                             DIG 30
+                             /* k_511, snd, var storage_351 */ ;
+                             DUP ;
+                             DUG 31 ;
+                             CDR ;
+                             DUP
+                             /* k_512, var k_511 */ ;
+                             DIG 2
+                             /* var k_510 */ ;
+                             DUP ;
+                             DUG 3 ;
+                             PAIR ;
+                             DUP
+                             /* j_615, var k_512 */ ;
+                             DIG 6
+                             /* var k_507 */ ;
+                             DUP ;
+                             DUG 7 ;
+                             PAIR ;
+                             DUP
+                             /* var j_615 */ ;
+                             DIP { DROP 15 }
+                             /* clean j_615, clean k_512, clean k_511, clean k_510, clean k_509, clean k_508, clean k_507, clean k_506, clean j_685, clean __v_684, clean __x_443, clean k_496, clean k_495, clean k_494 */ } ;
+                         DIP { DROP 3 }
+                         /* clean __v_451, clean k_493, clean k_492 */ } ;
+                    DIP { DROP 3 }
+                    /* clean k_491, clean k_490, clean k_489 */ } ;
+               DUP
+               /* var j_613 */ ;
+               DIP { DROP 6 }
+               /* clean j_613, clean k_488, clean k_487, clean k_486, clean k_485 */ } ;
+           DIP { DROP } } ;
+       DUP
+       /* var j_612 */ ;
+       DIP { DROP 10 }
+       /* clean j_612, clean __x_464, clean k_484, clean __x_468, clean k_483, clean __x_472, clean k_482, clean storage_351, clean global_param_352, final clean up */ } ;

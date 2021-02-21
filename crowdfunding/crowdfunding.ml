@@ -131,3 +131,6 @@ module%scamlcontract CrowdfundingMain = struct
 
   let [@entry] entrypoint = main
 end
+
+let _ =
+  [%scamlcontract CrowdfundingMain] |> print_string
